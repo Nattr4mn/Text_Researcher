@@ -1,6 +1,7 @@
 import collections
 import json
-from Structure import Structure
+
+from src.Structure import Structure
 
 
 class StructuresList(collections.MutableSequence):

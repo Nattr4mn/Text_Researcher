@@ -1,6 +1,7 @@
 import collections
 import json
-from Word import Word
+
+from src.Word import Word
 
 
 class WordsList(collections.MutableSequence):

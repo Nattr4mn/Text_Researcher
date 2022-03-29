@@ -26,12 +26,12 @@ class WordSequences:
     def endKey(self):
         return self.__endKey
 
-    def loadDictionary(self, file_name='WordSequences'):
+    def load(self, file_name='WordSequences'):
         if os.path.exists(str(file_name) + '.pickle'):
             with open('dictionary.pickle', 'rb') as file:
                 self.__dictionary = pickle.load(file)
 
-    def saveDictionary(self, file_name='WordSequences'):
+    def save(self, file_name='WordSequences'):
         with open(str(file_name) + '.pickle', 'wb') as file:
             pickle.dump(self.__dictionary, file)
 

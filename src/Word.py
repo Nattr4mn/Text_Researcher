@@ -1,5 +1,4 @@
 import pymorphy2
-import re
 
 
 class Word:
