@@ -41,11 +41,13 @@ class WordsList(collections.MutableSequence):
     def insert(self, i, word: str):
         index = self.__index_table.get(word)
         if index is not None:
-            self.__words[index].word_count += 1
+            self.__words[index].count += 1
         else:
-            self.__words.append(Word(word))
-            self.__words[-1].exploreWord()
-            self.__index_table.update({word: len(self.__words) - 1})
+            wordInfo = Word(word)
+            wordInfo.exploreWord()
+            if wordInfo.characteristic[0] is not 'PNCT':
+                self.__words.append(wordInfo)
+                self.__index_table.update({word: len(self.__words) - 1})
 
     def save(self, file_name="WordsList"):
         try:

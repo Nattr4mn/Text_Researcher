@@ -1,5 +1,4 @@
-import os
-import pickle
+import json
 import pymorphy2 as pm
 
 
@@ -26,14 +25,23 @@ class WordSequences:
     def endKey(self):
         return self.__endKey
 
-    def load(self, file_name='WordSequences'):
-        if os.path.exists(str(file_name) + '.pickle'):
-            with open('dictionary.pickle', 'rb') as file:
-                self.__dictionary = pickle.load(file)
+    def save(self, file_name="WordSequences"):
+        try:
+            with open(str(file_name) + ".json", "w") as write_file:
+                save_data = [self.__dictionary, self.__wordCount]
+                json.dump(save_data, write_file)
+        except Exception:
+            print('An error occurred while saving the WordSequences!')
 
-    def save(self, file_name='WordSequences'):
-        with open(str(file_name) + '.pickle', 'wb') as file:
-            pickle.dump(self.__dictionary, file)
+    def load(self, file_name="WordSequences"):
+        try:
+            with open(str(file_name) + ".json", "r") as read_file:
+                load_data = json.load(read_file)
+
+            self.__dictionary = load_data[0]
+            self.__wordCount = load_data[1]
+        except Exception:
+            print('An error occurred while loading the list of WordSequences!')
 
     def startKey(self):
         return self.__startKey

@@ -57,9 +57,9 @@ class StructuresList(collections.MutableSequence):
                 save_data.append(self.__index_table)
                 json.dump(save_data, write_file)
         except Exception:
-            print('An error occurred while saving the list!')
+            print('An error occurred while saving the structures!')
 
-    def load(self, file_name="Structures"):
+    def load(self, file_name="StructuresList"):
         try:
             with open(str(file_name) + ".json", "r") as read_file:
                 load_data = json.load(read_file)
