@@ -1,114 +1,59 @@
-import json
 import os
-from matplotlib import pyplot as plt
-from nltk import sent_tokenize, word_tokenize
+import re
 
-import TextHandler
-from StructureStatistic import StructureStatistic
-from Word import Word
+from chardet import UniversalDetector
+from src.TextInfo import TextInfo
 
 
 class TextResearcher:
-    def __init__(self):
-        self.__sentences_count = 0
-        self.__word_count = 0
-        self.__morphologic_quantity = dict()
-        self.__plot_number = 0
-        self.__dictionary = dict()
-        self.__standartStructures = dict()
-        self.__posStructures = dict()
-        self.__morphologicStructures = dict()
+    def __init__(self, process_before_saving=100):
+        self.__text_info = TextInfo()
+        self.__process_before_saving = process_before_saving
 
-    def createDictionary(self, text_tokens: list):
-        for sentence in text_tokens:
-            for word in sentence:
-                self.__dictionary.setdefault(word, Word(word))
-                self.__dictionary[word].word_count += 1
-                self.__word_count += 1
+    @property
+    def text_info(self):
+        return self.__text_info
 
-        return self.__dictionary
+    def collectingTextInfo(self, text: str):
+        self.__text_info.collectInformation(text)
 
-    def createStructures(self, text_tokens: list):
-        for sentence in text_tokens:
-            for word in sentence:
-                self.__dictionary.setdefault(word, Word(word))
-                self.__dictionary[word].word_count += 1
-                self.__word_count += 1
-
-        return self.__dictionary
-
-    def corpusResearch(self, corpus_path: str):
+    def collectingTextInfoInCorpus(self, corpus_path: str):
+        if re.match(r"\S:\\\S*", corpus_path) is None:
+            raise ValueError("Invalid path!")
         file_list = os.listdir(corpus_path)
+        save_counter = 0
         for file_name in file_list:
             try:
                 current_file = corpus_path + '\\' + file_name
-                encoding = TextHandler.determineEncoding(current_file)
+                encoding = TextResearcher.determineEncoding(current_file)
                 with open(current_file, encoding=encoding) as document:
                     print('File processing: ' + file_name)
                     text = document.read()
-                    self.__textProcessing(text)
+                self.__text_info.collectInformation(text)
             except Exception:
-                print('Возникла ошибка при обработке файла' + file_name)
+                print('Возникла ошибка при обработке файла ' + file_name)
                 continue
+            save_counter += 1
+            if save_counter == self.__process_before_saving:
+                self.save()
+                print('Saved!')
+                save_counter = 0
 
-    def __textProcessing(self, text):
-        sentence_tokens = sent_tokenize(text)
-        for sentence in sentence_tokens:
-            sentence_info = SentenceInfo(sentence)
-            sentence_struct = ' '.join(sentence_info.struct)
+    def save(self):
+        self.__text_info.saveInfo()
 
-            if self.__morphologic_quantity.get(sentence_struct) is None:
-                structure_statistic = StructureStatistic(sentence_info.struct)
-                structure_statistic.addSentenceFeature(sentence_info)
-                self.__morphologic_quantity[sentence_struct] = structure_statistic
-            else:
-                self.__morphologic_quantity[sentence_struct].addSentenceFeature(sentence_info)
+    def load(self):
+        self.__text_info.loadInfo()
 
-            self.__sentences_count += 1
-            self.__word_count += sentence_info.word_count
-
-    def __createTable(self, value: StructureStatistic, minStructQuantity: int):
-        if value.structure_quantity >= minStructQuantity:
-            data = list(value.morphologic_probability.values())
-            rows = list(value.morphologic_probability.keys())
-            columns = value.structure
-            fig = plt.figure(figsize=(15, 5), dpi=400)
-            ax = fig.add_subplot(111)
-            fig.patch.set_visible(False)
-            plt.title('Количество предложений с подобной структурой: ' + str(value.structure_quantity), fontsize=11,
-                      loc='left')
-            ax.axis('off')
-            ax.axis('tight')
-            ax.table(cellText=data, rowLabels=rows, colLabels=columns, loc='center', fontsize=22)
-            fig.tight_layout()
-            plt.savefig(os.getcwd() + '\\tables\\table_' + str(self.__plot_number))
-            plt.close()
-            self.__plot_number += 1
-
-    def calculateProbability(self):
-        for key, value in self.__morphologic_quantity.items():
-            self.__morphologic_quantity[key].calculateProbability()
-
-    def createTables(self, minStructQuantity):
-        for key, value in self.__morphologic_quantity.items():
-            self.__createTable(self.__morphologic_quantity[key], minStructQuantity)
-
-    def saveData(self):
-        morphologic_quantity_data = dict()
-        for key, value in self.__morphologic_quantity.items():
-            morphologic_quantity_data[key] = value.toDict()
-        data = {'All_Sentences': self.__sentences_count, 'Unique_Sentences': len(self.__morphologic_quantity),
-                'morphologic_quantity_data': morphologic_quantity_data}
-        with open('data.json', 'w') as f:
-            json.dump(data, f)
-
-    def loadData(self):
-        with open('data.json', "r") as read_file:
-            load_data = json.load(read_file)
-
-        self.__sentences_count = load_data['All_Sentences']
-
-        for key, value in load_data['morphologic_quantity_data'].items():
-            structure_statistic = StructureStatistic([])
-            structure_statistic.toStructureStatistic(value)
-            self.__morphologic_quantity[key] = structure_statistic
+    @staticmethod
+    def determineEncoding(path : str):
+        if re.match(r"\S:\\\S*", path) == None:
+            raise ValueError("Invalid path!")
+        detector = UniversalDetector()
+        with open(path, 'rb') as fh:
+            for line in fh:
+                detector.feed(line)
+                if detector.done:
+                    break
+            detector.close()
+        return detector.result['encoding']

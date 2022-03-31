@@ -38,9 +38,9 @@ class StructuresList(collections.MutableSequence):
         else:
             return False
 
-    def insert(self, i, sentence_tokens: list):
+    def insert(self, i, sentence_info: list):
         structure = Structure()
-        structure.createStructure(sentence_tokens)
+        structure.createStructure(sentence_info)
         index = self.__index_table.get(str(structure.standart))
         if index is not None:
             self.__structures[index].count += 1

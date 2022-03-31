@@ -1,6 +1,3 @@
-import pymorphy2
-
-
 class Structure:
     def __init__(self):
         self.__standart_structure = []
@@ -21,11 +18,10 @@ class Structure:
     def morphologic(self):
         return self.__morphologic_structure
 
-    def createStructure(self, sentence_token: list):
+    def createStructure(self, sentence_info: list):
         self.__clearStructures()
-        morph = pymorphy2.MorphAnalyzer()
-        for word_token in sentence_token:
-            word_info = morph.parse(word_token)[0]
+
+        for word_info in sentence_info:
             word_characteristic = str.split(' '.join(str.split(str(word_info.tag), ',')), ' ')
             if word_characteristic[0] == 'PNCT':
                 self.__standart_structure.append(str(word_info.word))

@@ -1,6 +1,7 @@
 import collections
 import json
 
+from pymorphy2.analyzer import Parse
 from src.Word import Word
 
 
@@ -25,7 +26,7 @@ class WordsList(collections.MutableSequence):
         del self.__words[i]
 
     def __str__(self):
-        return '; '.join([word.toString() for word in self.__words])
+        return '; '.join([str(word.toList()) for word in self.__words])
 
     def __setitem__(self, i, word: Word):
         self.__index_table.pop(self.__words[i].word)
@@ -38,34 +39,28 @@ class WordsList(collections.MutableSequence):
         else:
             return False
 
-    def insert(self, i, word: str):
-        index = self.__index_table.get(word)
+    def insert(self, i, word_info: Parse):
+        index = self.__index_table.get(word_info.word)
         if index is not None:
             self.__words[index].count += 1
         else:
-            wordInfo = Word(word)
-            wordInfo.exploreWord()
+            wordInfo = Word()
+            wordInfo.parse(word_info)
             if wordInfo.characteristic[0] is not 'PNCT':
                 self.__words.append(wordInfo)
-                self.__index_table.update({word: len(self.__words) - 1})
+                self.__index_table.update({word_info.word: len(self.__words) - 1})
 
     def save(self, file_name="WordsList"):
-        try:
-            with open(str(file_name) + ".json", "w") as write_file:
-                save_data = []
-                value_list = [value.toList() for value in self.__words]
-                save_data.append(value_list)
-                save_data.append(self.__index_table)
-                json.dump(save_data, write_file)
-        except Exception:
-            print('An error occurred while saving the list!')
+        with open(str(file_name) + ".json", "w") as write_file:
+            save_data = []
+            value_list = [value.toList() for value in self.__words]
+            save_data.append(value_list)
+            save_data.append(self.__index_table)
+            json.dump(save_data, write_file)
 
     def load(self, file_name="WordsList"):
-        try:
-            with open(str(file_name) + ".json", "r") as read_file:
-                load_data = json.load(read_file)
+        with open(str(file_name) + ".json", "r") as read_file:
+            load_data = json.load(read_file)
 
-            self.__words = [Word.toWord(word) for word in load_data[0]]
-            self.__index_table = load_data[1]
-        except Exception:
-            print('An error occurred while loading the list of words!')
+        self.__words = [Word.toWord(word) for word in load_data[0]]
+        self.__index_table = load_data[1]

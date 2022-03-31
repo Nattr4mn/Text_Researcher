@@ -1,6 +1,8 @@
 import json
 import sys
+import threading
 
+import pymorphy2
 from nltk import sent_tokenize, word_tokenize
 from src.Lists.StructuresList import StructuresList
 from src.Lists.WordSequences import WordSequences
@@ -73,38 +75,13 @@ class TextInfo:
 
     def collectInformation(self, text: str):
         text_tokens, sentence_count, word_count = TextInfo.tokenizeText(text)
-        text_template = {'STAND': list(), 'POS': list(), 'MORPH': list()}
         self.__sentence_count += sentence_count
         self.__word_count += word_count
-
         if sentence_count < self.__min_sentences_count:
             self.__min_sentences_count = sentence_count
-
         if sentence_count > self.__max_sentences_count:
             self.__max_sentences_count = sentence_count
-
-        self.__word_sequences.createSequences(text_tokens)
-
-        for sentence_token in text_tokens:
-            self.__structures_list.append(sentence_token)
-            text_template['STAND'].append(self.__structures_list[-1].standart)
-            text_template['POS'].append(self.__structures_list[-1].pos)
-            text_template['MORPH'].append(self.__structures_list[-1].morphologic)
-
-            if len(sentence_token) < self.__min_word_count:
-                self.__min_word_count = len(sentence_token)
-
-            if len(sentence_token) > self.__max_word_count:
-                self.__max_word_count = len(sentence_token)
-
-            for word_token in sentence_token:
-                self.__words_list.append(word_token)
-                word = self.__words_list[-1]
-                self.__updateMorphologicDictionary(word)
-
-        self.__text_templates['STAND'].append(text_template['STAND'])
-        self.__text_templates['POS'].append(text_template['POS'])
-        self.__text_templates['MORPH'].append(text_template['MORPH'])
+        self.__tokensProcessing(text_tokens)
 
     def saveInfo(self, file_name="TextInfo"):
         self.__structures_list.save()
@@ -113,7 +90,6 @@ class TextInfo:
         morph_dict = dict()
         for key, value in self.__morphologic_dictionary.items():
             morph_dict.setdefault(key, list(value))
-
         with open(str(file_name) + ".json", "w") as file:
             save_data = [self.__text_templates, morph_dict, self.__sentence_count, self.__word_count,
                          self.__min_sentences_count, self.__max_sentences_count, self.__min_word_count, self.__max_word_count]
@@ -144,6 +120,35 @@ class TextInfo:
         for token in tokens:
             word_count += len(token)
         return tokens, sentence_count, word_count
+
+    def __tokensProcessing(self, text_tokens: list):
+        morph = pymorphy2.MorphAnalyzer()
+        text_template = {'STAND': list(), 'POS': list(), 'MORPH': list()}
+
+        for sentence_token in text_tokens:
+            sentence_info = list()
+            for word_token in sentence_token:
+                word_info = morph.parse(word_token)[0]
+                sentence_info.append(word_info)
+                self.__words_list.append(word_info)
+                word = self.__words_list[-1]
+                self.__updateMorphologicDictionary(word)
+
+            self.__word_sequences.createSequences(sentence_info)
+            self.__structures_list.append(sentence_info)
+            text_template['STAND'].append(self.__structures_list[-1].standart)
+            text_template['POS'].append(self.__structures_list[-1].pos)
+            text_template['MORPH'].append(self.__structures_list[-1].morphologic)
+
+            if len(sentence_token) < self.__min_word_count:
+                self.__min_word_count = len(sentence_token)
+
+            if len(sentence_token) > self.__max_word_count:
+                self.__max_word_count = len(sentence_token)
+
+        self.__text_templates['STAND'].append(text_template['STAND'])
+        self.__text_templates['POS'].append(text_template['POS'])
+        self.__text_templates['MORPH'].append(text_template['MORPH'])
 
     def __updateMorphologicDictionary(self, word: Word):
         if self.__morphologic_dictionary.get(str(word.characteristic)) is None:
