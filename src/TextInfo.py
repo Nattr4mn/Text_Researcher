@@ -1,6 +1,5 @@
 import json
 import sys
-import threading
 
 import pymorphy2
 from nltk import sent_tokenize, word_tokenize
@@ -87,11 +86,12 @@ class TextInfo:
         self.__structures_list.save()
         self.__words_list.save()
         self.__word_sequences.save()
-        morph_dict = dict()
         for key, value in self.__morphologic_dictionary.items():
-            morph_dict.setdefault(key, list(value))
+            self.__morphologic_dictionary[str(key)] = list(set(value))
+        for key, value in self.__pos_dictionary.items():
+            self.__pos_dictionary[str(key)] = list(set(value))
         with open(str(file_name) + ".json", "w") as file:
-            save_data = [self.__text_templates, morph_dict, self.__sentence_count, self.__word_count,
+            save_data = [self.__text_templates, self.__morphologic_dictionary, self.__pos_dictionary, self.__sentence_count, self.__word_count,
                          self.__min_sentences_count, self.__max_sentences_count, self.__min_word_count, self.__max_word_count]
             json.dump(save_data, file)
 
@@ -101,14 +101,16 @@ class TextInfo:
         self.__word_sequences.load()
         with open(str(file_name) + ".json", "r") as file:
             load_data = json.load(file)
+
         self.__text_templates = load_data[0]
         self.__morphologic_dictionary = load_data[1]
-        self.__sentence_count = int(load_data[2])
-        self.__word_count = int(load_data[3])
-        self.__min_sentences_count = int(load_data[4])
-        self.__max_sentences_count = int(load_data[5])
-        self.__min_word_count = int(load_data[6])
-        self.__max_word_count = int(load_data[7])
+        self.__pos_dictionary = load_data[2]
+        self.__sentence_count = int(load_data[3])
+        self.__word_count = int(load_data[4])
+        self.__min_sentences_count = int(load_data[5])
+        self.__max_sentences_count = int(load_data[6])
+        self.__min_word_count = int(load_data[7])
+        self.__max_word_count = int(load_data[8])
 
     @staticmethod
     def tokenizeText(text: str):
@@ -146,17 +148,23 @@ class TextInfo:
             if len(sentence_token) > self.__max_word_count:
                 self.__max_word_count = len(sentence_token)
 
-        self.__text_templates['STAND'].append(text_template['STAND'])
-        self.__text_templates['POS'].append(text_template['POS'])
-        self.__text_templates['MORPH'].append(text_template['MORPH'])
+        self.__addTemplates(text_template['STAND'], text_template['POS'], text_template['MORPH'])
+
+    def __addTemplates(self, standart_template: list, pos_template: list, morph_template: list):
+        if standart_template not in self.__text_templates['STAND']:
+            self.__text_templates['STAND'].append(standart_template)
+        if pos_template not in self.__text_templates['STAND']:
+            self.__text_templates['POS'].append(pos_template)
+        if morph_template not in self.__text_templates['STAND']:
+            self.__text_templates['MORPH'].append(morph_template)
 
     def __updateMorphologicDictionary(self, word: Word):
         if self.__morphologic_dictionary.get(str(word.characteristic)) is None:
-            self.__morphologic_dictionary.update({str(word.characteristic): set(word.word)})
+            self.__morphologic_dictionary.update({str(word.characteristic): [word.word]})
         else:
-            self.__morphologic_dictionary[str(word.characteristic)].add(word.word)
+            self.__morphologic_dictionary[str(word.characteristic)].append(word.word)
 
         if self.__pos_dictionary.get(str(word.characteristic[0])) is None:
-            self.__pos_dictionary.update({str(word.characteristic[0]): set(word.word)})
+            self.__pos_dictionary.update({str(word.characteristic[0]): [word.word]})
         else:
-            self.__pos_dictionary[str(word.characteristic[0])].add(word.word)
+            self.__pos_dictionary[str(word.characteristic[0])].append(word.word)

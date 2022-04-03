@@ -27,17 +27,17 @@ class TextResearcher:
                 current_file = corpus_path + '\\' + file_name
                 encoding = TextResearcher.determineEncoding(current_file)
                 with open(current_file, encoding=encoding) as document:
-                    print('File processing: ' + file_name)
                     text = document.read()
                 self.__text_info.collectInformation(text)
+
+                save_counter += 1
+                if save_counter == self.__process_before_saving:
+                    self.save()
+                    print('Saved! Last processed file: ' + file_name)
+                    save_counter = 0
             except Exception:
-                print('Возникла ошибка при обработке файла ' + file_name)
+                print('An error occurred while processing the file ' + file_name)
                 continue
-            save_counter += 1
-            if save_counter == self.__process_before_saving:
-                self.save()
-                print('Saved!')
-                save_counter = 0
 
     def save(self):
         self.__text_info.saveInfo()
