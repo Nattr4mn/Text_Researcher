@@ -1,7 +1,7 @@
 import json
 import sys
-
 import pymorphy2
+
 from nltk import sent_tokenize, word_tokenize
 from src.Lists.StructuresList import StructuresList
 from src.Lists.WordSequences import WordSequences
