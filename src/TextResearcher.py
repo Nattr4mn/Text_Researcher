@@ -28,10 +28,31 @@ class TextResearcher:
 
     def researchCorpuses(self, natural_text_path: str, generation_text_path: str):
         np.set_printoptions(threshold=sys.maxsize)
-        nat_statistic, nat_sentence_count = self.__natural_statistic_data.calculateStatistics()
-        gen_statistic, gen_sentence_count = self.__generate_statistic_data.calculateStatistics()
-        self.__plot.statisticsComp(nat_statistic, gen_statistic)
-        self.__textCount += 1
+        natural_file_list = os.listdir(natural_text_path)
+        gen_file_list = os.listdir(generation_text_path)
+        for file_index in range(0, len(gen_file_list)):
+            nat_current_file = natural_text_path + '\\' + natural_file_list[file_index]
+            gen_current_file = generation_text_path + '\\' + gen_file_list[file_index]
+            save_counter = 0
+            encoding = TextResearcher.determineEncoding(nat_current_file)
+            with open(nat_current_file, encoding=encoding) as document:
+                nat_text = document.read()
+            encoding = TextResearcher.determineEncoding(gen_current_file)
+            with open(gen_current_file, encoding=encoding) as document:
+                gen_text = document.read()
+            nat_statistic, nat_sentence_count = self.__natural_statistic_data.calculateStatistics(nat_text)
+            gen_statistic, gen_sentence_count = self.__generate_statistic_data.calculateStatistics(gen_text)
+            save_counter += 1
+            if save_counter == self.__process_before_saving:
+                self.__natural_statistic_data.save('Natural_Statistic_Data')
+                self.__generate_statistic_data.save('Generation_Statistic_Data')
+                print('Saved! Last processed file: ')
+                save_counter = 0
+            self.__plot.statisticsComp(nat_statistic, gen_statistic)
+            self.__textCount += 1
+        self.__natural_statistic_data.save('Natural_Statistic_Data')
+        self.__generate_statistic_data.save('Generation_Statistic_Data')
+        self.__buildPlots()
 
     def collectingTextInfoInCorpus(self, corpus_path: str):
         if re.match(r"\S:\\\S*", corpus_path) is None:
@@ -73,3 +94,9 @@ class TextResearcher:
                     break
             detector.close()
         return detector.result['encoding']
+
+    def __buildPlots(self, plotNameForSave=''):
+        self.__plot.CreatePlots(self.__textCount, plotNameForSave)
+        self.__plot.CreatePlotsAV(self.__textCount, plotNameForSave)
+        self.__plot.CreatePlotsSTD(plotNameForSave)
+        self.__plot.CreatePlotsSTDmean(plotNameForSave)

@@ -9,7 +9,7 @@ from src.Lists.WordSequences import WordSequences
 class TextGenerator:
     def __init__(self, save_path: str):
         self.__punct = string.punctuation
-        self.__punct += '—–...«»***\n '
+        self.__punct += '—–...«»***\n“„'
         self.__save_path = save_path
         self.__text_number = 0
 
@@ -18,7 +18,7 @@ class TextGenerator:
         for sentence_template in word_template:
             for word_template in sentence_template:
                 if word_template in self.__punct:
-                    text += word_template
+                    text += word_template + ' '
                 else:
                     index = random.randint(0, len(word_list) - 1)
                     text += word_list[index].word + ' '
@@ -27,18 +27,15 @@ class TextGenerator:
 
     def markovWordStructGeneration(self, word_template: list, word_sequences: WordSequences):
         text = ''
-        curWord = previousWord = word_sequences.startKey
-
         for sentence_template in word_template:
-            curWord = previousWord = word_sequences.startKey
+            cur_word = word_sequences.startKey
             for word in sentence_template:
-                curWord, previousWord = self.__WordSelection(word_sequences, curWord, previousWord)
+                cur_word, previous_word = self.__wordSelection(word_sequences, cur_word)
                 if word == 'WORD':
-                    text += curWord + ' '
+                    text += cur_word + ' '
                 else:
                     text += word + ' '
-                    curWord = previousWord = word
-
+                    cur_word = word
         self.__saveGenText(text, 'markov_generation_')
         self.__text_number += 1
         return text
@@ -53,35 +50,25 @@ class TextGenerator:
 
         return text_template
 
-    def __WordListSelection(self, dictionary):
+    def __wordListSelection(self, dictionary):
         punct = string.punctuation
-        punct += '—–...«»***\n``'
+        self.__punct += '—–...«»***\n“„'
         wordList = []
-
         for k, v in dictionary.items():
             if k not in punct:
                 wordList += [k] * v
         return wordList
 
-    def __WordSelection(self, word_sequences: WordSequences, current_word, previous_word):
-        word_list = self.__WordListSelection(word_sequences.Dictionary[current_word])
+    def __wordSelection(self, word_sequences: WordSequences, current_word):
+        word_list = self.__wordListSelection(word_sequences.Dictionary[current_word])
         cur_word = current_word
-        prev_word = previous_word
         if len(word_list) == 0:
-            iterations = 0
-            while len(word_list) == 0:
-                iterations += 1
-                cur_word = prev_word
-                word_list = self.__WordListSelection(word_sequences.Dictionary[cur_word])
-                if iterations > 50:
-                    cur_word = prev_word = word_sequences.startKey
-
-        prev_word = cur_word
+            cur_word = word_sequences.startKey
+            word_list = self.__wordListSelection(word_sequences.Dictionary[cur_word])
         cur_word = word_list[random.randint(0, len(word_list) - 1)]
         if cur_word == word_sequences.endKey:
-            cur_word = prev_word = word_sequences.startKey
-
-        return cur_word, prev_word
+            cur_word = word_sequences.startKey
+        return cur_word
 
     def __saveGenText(self, text: str, text_name: str):
         file_name = text_name + str(self.__text_number)
