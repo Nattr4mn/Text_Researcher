@@ -31,25 +31,32 @@ class TextResearcher:
         natural_file_list = os.listdir(natural_text_path)
         gen_file_list = os.listdir(generation_text_path)
         for file_index in range(0, len(gen_file_list)):
-            nat_current_file = natural_text_path + '\\' + natural_file_list[file_index]
-            gen_current_file = generation_text_path + '\\' + gen_file_list[file_index]
-            save_counter = 0
-            encoding = TextResearcher.determineEncoding(nat_current_file)
-            with open(nat_current_file, encoding=encoding) as document:
-                nat_text = document.read()
-            encoding = TextResearcher.determineEncoding(gen_current_file)
-            with open(gen_current_file, encoding=encoding) as document:
-                gen_text = document.read()
-            nat_statistic, nat_sentence_count = self.__natural_statistic_data.calculateStatistics(nat_text)
-            gen_statistic, gen_sentence_count = self.__generate_statistic_data.calculateStatistics(gen_text)
-            save_counter += 1
-            if save_counter == self.__process_before_saving:
-                self.__natural_statistic_data.save('Natural_Statistic_Data')
-                self.__generate_statistic_data.save('Generation_Statistic_Data')
-                print('Saved! Last processed file: ')
-                save_counter = 0
-            self.__plot.statisticsComp(nat_statistic, gen_statistic)
-            self.__textCount += 1
+            try:
+                nat_current_file = natural_text_path + '\\' + natural_file_list[file_index]
+                gen_current_file = generation_text_path + '\\' + gen_file_list[file_index]
+
+                encoding = TextResearcher.determineEncoding(nat_current_file)
+                with open(nat_current_file, encoding=encoding) as document:
+                    nat_text = document.read()
+
+                encoding = TextResearcher.determineEncoding(gen_current_file)
+                with open(gen_current_file, encoding=encoding) as document:
+                    gen_text = document.read()
+
+                nat_statistic, nat_sentence_count = self.__natural_statistic_data.calculateStatistics(nat_text)
+                gen_statistic, gen_sentence_count = self.__generate_statistic_data.calculateStatistics(gen_text)
+
+                if self.__textCount % self.__process_before_saving == 0:
+                    self.__natural_statistic_data.save('Natural_Statistic_Data')
+                    self.__generate_statistic_data.save('Generation_Statistic_Data')
+                    print("Обработано: " + str(self.__textCount))
+
+                self.__plot.statisticsComp(nat_statistic, gen_statistic)
+                self.__textCount += 1
+            except Exception as e:
+                print('An error occurred while processing the file: ' + str(natural_file_list[file_index]) + '; ' + str(gen_file_list[file_index]))
+                print(e)
+                continue
         self.__natural_statistic_data.save('Natural_Statistic_Data')
         self.__generate_statistic_data.save('Generation_Statistic_Data')
         self.__buildPlots()
@@ -69,21 +76,22 @@ class TextResearcher:
 
                 save_counter += 1
                 if save_counter == self.__process_before_saving:
-                    self.save()
+                    self.__text_info.saveInfo()
                     print('Saved! Last processed file: ' + file_name)
                     save_counter = 0
-            except Exception:
+            except Exception as e:
                 print('An error occurred while processing the file ' + file_name)
+                print(e)
                 continue
-
-    def save(self):
         self.__text_info.saveInfo()
 
-    def load(self):
+    def loadData(self):
         self.__text_info.loadInfo()
+        self.__natural_statistic_data.load('Natural_Statistic_Data')
+        self.__generate_statistic_data.load('Generation_Statistic_Data')
 
     @staticmethod
-    def determineEncoding(path : str):
+    def determineEncoding(path: str):
         if re.match(r"\S:\\\S*", path) == None:
             raise ValueError("Invalid path!")
         detector = UniversalDetector()

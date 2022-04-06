@@ -3,6 +3,8 @@ import sys
 import pymorphy2
 
 from nltk import sent_tokenize, word_tokenize
+from razdel import tokenize
+
 from src.Lists.StructuresList import StructuresList
 from src.Lists.WordSequences import WordSequences
 from src.Lists.WordsList import WordsList
@@ -115,13 +117,15 @@ class TextInfo:
     @staticmethod
     def tokenizeText(text: str):
         text = text.lower()
-        tokens = sent_tokenize(text, language="russian")
-        sentence_count = len(tokens)
-        tokens = [word_tokenize(sentence, language="russian") for sentence in tokens]
+        sentence_tokens = sent_tokenize(text, language="russian")
+        sentence_count = len(sentence_tokens)
         word_count = 0
-        for token in tokens:
-            word_count += len(token)
-        return tokens, sentence_count, word_count
+        text_tokens = []
+        for sentence_token in sentence_tokens:
+            word_tokens = list(tokenize(sentence_token.lower()))          #Токенизация по словам
+            text_tokens.append([_.text for _ in word_tokens])
+            word_count += len(word_tokens)
+        return text_tokens, sentence_count, word_count
 
     def __tokensProcessing(self, text_tokens: list):
         morph = pymorphy2.MorphAnalyzer()

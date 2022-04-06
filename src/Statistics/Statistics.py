@@ -113,7 +113,7 @@ class Statistics:
         degMdn = np.zeros(len(graph))
         for i in range(len(graph)):
             degMdn[i] = np.median(graph[i])
-        degMn.sort()
+        degMdn.sort()
         return degMdn
 
     def __calculateTheta(self, graph):
@@ -130,12 +130,12 @@ class Statistics:
 
     def toList(self):
         return [
-            self.d, self.maxD, self.meanD, self.medianD, self.stdD,
-            self.dMx, self.maxDmx, self.meanDmx, self.medianDmx, self.stdDmx,
-            self.dMn, self.maxDmn, self.meanDmn, self.medianDmn, self.stdDmn,
-            self.dMdn, self.maxDmdn, self.meanDmdn, self.medianDmdn, self.stdDmdn,
-            self.theta, self.maxTheta, self.meanTheta, self.medianTheta, self.stdTheta,
-            self.thetaS, self.maxThetaS, self.meanThetaS, self.medianThetaS, self.stdThetaS
+            list(self.d), self.maxD, self.meanD, self.medianD, self.stdD,
+            list(self.dMx), self.maxDmx, self.meanDmx, self.medianDmx, self.stdDmx,
+            list(self.dMn), self.maxDmn, self.meanDmn, self.medianDmn, self.stdDmn,
+            list(self.dMdn), self.maxDmdn, self.meanDmdn, self.medianDmdn, self.stdDmdn,
+            list(self.theta), self.maxTheta, self.meanTheta, self.medianTheta, self.stdTheta,
+            list(self.theta), self.maxThetaS, self.meanThetaS, self.medianThetaS, self.stdThetaS
         ]
 
     def toStatistics(self, data: list):

@@ -17,3 +17,5 @@ main.py
 [Dd]ictionary.pickle
 *.json
 *.pickle
+/Temporary/Statistics.py
+/Temporary/StructureStatistic.py
