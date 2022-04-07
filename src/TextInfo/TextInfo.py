@@ -2,13 +2,13 @@ import json
 import sys
 import pymorphy2
 
-from nltk import sent_tokenize, word_tokenize
+from nltk import sent_tokenize
 from razdel import tokenize
 
-from src.Lists.StructuresList import StructuresList
-from src.Lists.WordSequences import WordSequences
-from src.Lists.WordsList import WordsList
-from src.Word import Word
+from src.TextInfo.StructuresList import StructuresList
+from src.TextInfo.WordSequences import WordSequences
+from src.TextInfo.WordsList import WordsList
+from src.TextInfo.Word import Word
 
 
 class TextInfo:

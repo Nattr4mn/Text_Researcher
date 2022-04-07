@@ -1,14 +1,14 @@
 import random
 import string
 
-from src.Lists import WordsList
-from src.Lists.StructuresList import StructuresList
-from src.Lists.WordSequences import WordSequences
+from src.TextInfo.WordsList import WordsList
+from src.TextInfo.StructuresList import StructuresList
+from src.TextInfo.WordSequences import WordSequences
 
 class TextGenerator:
     def __init__(self, save_path: str, start_number=0):
         self.__punct = string.punctuation
-        self.__punct += '—–...«»***\n“„'
+        self.__punct += '—–...«»***\n“„`'
         self.__save_path = save_path
         self.__text_number = start_number
 
@@ -61,11 +61,9 @@ class TextGenerator:
         return cur_word
 
     def __wordListSelection(self, dictionary):
-        punct = string.punctuation
-        self.__punct += '—–...«»***\n“„'
         wordList = []
         for k, v in dictionary.items():
-            if k not in punct:
+            if k not in self.__punct:
                 wordList += [k] * v
         return wordList
 

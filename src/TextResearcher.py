@@ -7,7 +7,7 @@ from chardet import UniversalDetector
 
 from src.Statistics.PlotBuilder import PlotBuilder
 from src.Statistics.StatisticalData import StatisticalData
-from src.TextInfo import TextInfo
+from src.TextInfo.TextInfo import TextInfo
 
 
 class TextResearcher:
@@ -22,6 +22,14 @@ class TextResearcher:
     @property
     def text_info(self):
         return self.__text_info
+
+    @property
+    def natural_statistic_data(self):
+        return self.__natural_statistic_data
+
+    @property
+    def generate_statistic_data(self):
+        return self.__generate_statistic_data
 
     def collectingTextInfo(self, text: str):
         self.__text_info.collectInformation(text)

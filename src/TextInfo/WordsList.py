@@ -2,7 +2,7 @@ import collections
 import json
 
 from pymorphy2.analyzer import Parse
-from src.Word import Word
+from src.TextInfo.Word import Word
 
 
 class WordsList(collections.MutableSequence):

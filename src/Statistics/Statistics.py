@@ -68,7 +68,7 @@ class Statistics:
         self.stdDmn = np.std(self.dMn)
 
         # degMdn
-        self.dMdn = self.__calculateDegMx(graph)
+        self.dMdn = self.__calculateDegMdn(graph)
         self.maxDmdn = np.max(self.dMdn)
         self.meanDmdn = np.mean(self.dMdn)
         self.medianDmdn = np.median(self.dMdn)

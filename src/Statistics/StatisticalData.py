@@ -1,16 +1,17 @@
 import json
-import string
 import pymorphy2
 
 from src.Statistics.GraphBuilder import GraphBuilder
 from src.Statistics.Statistics import Statistics
-from src.TextInfo import TextInfo
+from src.TextInfo.TextInfo import TextInfo
 
 
 class StatisticalData:
     def __init__(self):
         self.__texts_statistic = []
         self.__pos_counter = dict()
+        self.__pos_list = ['ADJF', 'ADJS', 'COMP', 'VERB', 'INFN', 'PRTF', 'PRTS', 'GRND', 'NUMR', 'ADVB', 'NPRO', 'PRED', 'PREP', 'CONJ', 'PRCL', 'INTJ']
+
         self.__counter_pos_text = dict()
         self.__sentence_count = 0
         self.__word_count = 0
@@ -81,14 +82,12 @@ class StatisticalData:
         morph = pymorphy2.MorphAnalyzer()
         pos_structure = []
         pos_counter = dict()
-        punctuation = string.punctuation
-        punctuation += '—–...«»***\n '
         for sentense_token in text_tokens:
             pos_sentence_structure = []
             for word_token in sentense_token:
-                if word_token not in punctuation:
-                    word_info = morph.parse(word_token)[0]
-                    word_pos = str(word_info.tag.POS)
+                word_info = morph.parse(word_token)[0]
+                word_pos = str(word_info.tag.POS)
+                if word_pos != 'PNCT' and word_pos in self.__pos_list:
                     pos_sentence_structure.append(word_pos)
                     if pos_counter.get(word_pos) is None:
                         pos_counter[word_pos] = 1
